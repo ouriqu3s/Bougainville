@@ -122,6 +122,20 @@
                 height: 150px;
             }
         }
+
+        .maps-link {
+            margin-top: 15px;
+            display: block;
+            text-align: center;
+            color: #d2691e;
+            font-weight: bold;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .maps-link:hover {
+            color: #a0522d;
+        }
     </style>
 </head>
 <body>
@@ -151,6 +165,7 @@
     <button onclick="buscarLote()">Buscar</button>
     
     <div id="resultado" aria-live="polite"></div>
+    <a id="mapsLink" href="#" target="_blank" class="maps-link hidden">Abrir no Google Maps</a>
     <div id="qrCodeContainer" aria-hidden="true"></div>
 </div>
 
@@ -2726,10 +2741,10 @@
         "Quadra": "246",
         "Lote": "6963"
     }
-            // Adicionar mais casas
-     ,
-        // ...dados omitidos para brevidade...
+    
     ];
+
+    const portariaCoords = { lat: -7.152267593028614, lng: -34.80935291604945 }; // Coordenadas da portaria
 
     function toggleFields() {
         const searchType = document.getElementById("searchType").value;
@@ -2745,8 +2760,10 @@
 
         const resultadoDiv = document.getElementById('resultado');
         const qrCodeContainer = document.getElementById('qrCodeContainer');
+        const mapsLink = document.getElementById('mapsLink');
         resultadoDiv.innerHTML = '';
         qrCodeContainer.innerHTML = '';
+        mapsLink.classList.add("hidden");
 
         if ((searchType === "quadraLote" && (!quadra || !lote)) || (searchType === "casa" && !casa)) {
             resultadoDiv.innerHTML = '<p>Por favor, preencha todos os campos necessários.</p>';
@@ -2766,11 +2783,16 @@
             if (coordenadas) {
                 const lat = coordenadas[2];
                 const lng = coordenadas[1];
+                const url = `https://www.google.com/maps/dir/?api=1&origin=${portariaCoords.lat},${portariaCoords.lng}&destination=${lat},${lng}&travelmode=driving`;
+
                 resultadoDiv.innerHTML = `<p><strong>Quadra:</strong> ${resultado.Quadra}</p>
                                           <p><strong>Lote:</strong> ${resultado.Lote}</p>
                                           <p><strong>Casa:</strong> ${resultado["Nº da Casa"]}</p>
                                           <p><strong>Proprietário:</strong> ${resultado.Proprietario}</p>`;
-                const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=driving`;
+
+                mapsLink.href = url;
+                mapsLink.classList.remove("hidden");
+
                 QRCode.toDataURL(url, function (err, url) {
                     if (!err) {
                         const img = document.createElement('img');
