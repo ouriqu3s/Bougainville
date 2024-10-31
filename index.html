@@ -98,7 +98,6 @@
             margin-top: 25px;
             font-size: 16px;
             line-height: 1.5;
-            color: #000000;
             text-align: left;
         }
 
@@ -113,6 +112,16 @@
             input, button, select {
                 font-size: 14px;
                 padding: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            h2 {
+                font-size: 1.3em;
+            }
+            input, button, select {
+                font-size: 12px;
+                padding: 8px;
             }
         }
     </style>
@@ -144,12 +153,12 @@
     <button id="buscarButton" onclick="buscarLote()">Buscar</button>
     
     <div id="resultado" aria-live="polite"></div>
-    <button id="mapsButton" class="hidden" onclick="abrirGoogleMaps()">Gerar Trajeto</button>
+    <button id="mapsButton" class="hidden" onclick="abrirGoogleMaps()" aria-label="Gerar trajeto para o Google Maps">Gerar Trajeto</button>
 </div>
 
 <script>
     const dados = [
-               {
+       {
         "WKT": "POINT (-34.80944116911525 -7.152811565247221)",
         "Nº da Casa": "2135",
         "Quadra": "242",
@@ -2351,7 +2360,6 @@
         "Quadra": "246",
         "Lote": "6963"
     }
-   
     ];
 
     const portariaCoords = { lat: -7.152267593028614, lng: -34.80935291604945  }; // Coordenadas da portaria
@@ -2380,13 +2388,21 @@
         const resultadoDiv = document.getElementById('resultado');
         const mapsButton = document.getElementById('mapsButton');
         resultadoDiv.innerHTML = '';
+        resultadoDiv.style.color = '#333'; // Reseta a cor do texto
         mapsButton.classList.add("hidden");
 
-        if ((searchType === "quadraLote" && (!quadra || !lote)) || (searchType === "casa" && !casa)) {
-            resultadoDiv.innerHTML = '<p>Por favor, preencha todos os campos necessários.</p>';
+        // Validação de entrada com mensagens dinâmicas
+        if (searchType === "quadraLote" && (!quadra || !lote)) {
+            resultadoDiv.style.color = 'red';
+            resultadoDiv.innerHTML = `<p>Por favor, preencha o campo ${!quadra ? 'Quadra' : ''} ${!lote ? 'Lote' : ''}.</p>`;
+            return;
+        } else if (searchType === "casa" && !casa) {
+            resultadoDiv.style.color = 'red';
+            resultadoDiv.innerHTML = '<p>Por favor, preencha o campo Número da Casa.</p>';
             return;
         }
 
+        // Busca nos dados
         let resultado;
         if (searchType === "quadraLote") {
             resultado = dados.find(dado => dado.Quadra === quadra && dado.Lote === lote);
@@ -2401,15 +2417,18 @@
                 const lng = coordenadas[1];
                 googleMapsUrl = `https://www.google.com/maps/dir/?api=1&origin=${portariaCoords.lat},${portariaCoords.lng}&destination=${lat},${lng}&travelmode=driving`;
 
+                resultadoDiv.style.color = 'green';
                 resultadoDiv.innerHTML = `<p><strong>Quadra:</strong> ${resultado.Quadra}</p>
                                           <p><strong>Lote:</strong> ${resultado.Lote}</p>
                                           <p><strong>Casa:</strong> ${resultado["Nº da Casa"]}</p>`;
 
                 mapsButton.classList.remove("hidden");
             } else {
+                resultadoDiv.style.color = 'red';
                 resultadoDiv.innerHTML = '<p>Erro ao obter coordenadas do lote.</p>';
             }
         } else {
+            resultadoDiv.style.color = 'red';
             resultadoDiv.innerHTML = '<p>Nenhum resultado encontrado.</p>';
         }
     }
